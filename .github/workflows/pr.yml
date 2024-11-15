@@ -1,0 +1,28 @@
+name: Count Pull Requests
+
+on:
+  workflow_dispatch: # Trigger the workflow manually
+
+jobs:
+  count-prs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Count Pull Requests
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "Fetching pull requests for repository: ${{ github.repository }}"
+        
+        # Fetch all pull requests using GitHub API
+        PR_COUNT=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+          "https://api.github.com/repos/${{ github.repository }}/pulls?state=all&per_page=1" \
+          | grep -o '"total_count":[0-9]*' | head -1 | grep -o '[0-9]*')
+
+        echo "Total Pull Requests: $PR_COUNT"
+
+        # Save output to a file (optional)
+        echo $PR_COUNT > pull_request_count.txt
